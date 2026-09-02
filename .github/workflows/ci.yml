@@ -43,7 +43,12 @@ jobs:
 
       - name: Add built commands to PATH
         shell: bash
-        run: echo "$PWD/bin" >> "$GITHUB_PATH"
+        run: |
+          path="$PWD/bin"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            path=$(cygpath --windows "$path")
+          fi
+          echo "$path" >> "$GITHUB_PATH"
 
       - name: Smoke-test commands and completion
         shell: bash
