@@ -7,6 +7,7 @@ import (
 )
 
 func TestMixedTargetSelection(t *testing.T) {
+	t.Parallel()
 	t.Run("commits a complete file and selected ranges atomically", func(t *testing.T) {
 		repo := newRepository(t)
 		base := []byte("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n")

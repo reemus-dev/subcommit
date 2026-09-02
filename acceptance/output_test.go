@@ -7,6 +7,7 @@ import (
 )
 
 func TestColorModes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name      string
 		color     string
@@ -60,6 +61,7 @@ func TestColorModes(t *testing.T) {
 }
 
 func TestSelectedUntrackedDirectoryIsNotReportedAsPreserved(t *testing.T) {
+	t.Parallel()
 	repo := newRepository(t)
 	repo.seedBasic()
 	repo.write("new/one.txt", []byte("one\n"))
@@ -76,6 +78,7 @@ func TestSelectedUntrackedDirectoryIsNotReportedAsPreserved(t *testing.T) {
 }
 
 func TestQuietAndVerboseOutput(t *testing.T) {
+	t.Parallel()
 	t.Run("quiet keeps only stable success output", func(t *testing.T) {
 		repo := outputRepository(t)
 		result := repo.subcommit(

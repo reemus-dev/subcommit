@@ -9,6 +9,7 @@ import (
 )
 
 func TestExactMoveSelection(t *testing.T) {
+	t.Parallel()
 	t.Run("selecting destination includes source", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.write("old.txt", []byte("moved\n"))

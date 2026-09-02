@@ -3,6 +3,7 @@ package acceptance
 import "testing"
 
 func TestNativeGitComparison(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name          string
 		mutate        func(*repository)

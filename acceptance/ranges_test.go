@@ -8,6 +8,7 @@ import (
 )
 
 func TestRangeSelectionAndDiffEdges(t *testing.T) {
+	t.Parallel()
 	t.Run("commits selected region and preserves separated edit", func(t *testing.T) {
 		repo := newRepository(t)
 		seedLines(repo, []byte("l1\nl2\nl3\nl4\nl5\n"))

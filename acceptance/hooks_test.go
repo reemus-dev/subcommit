@@ -10,6 +10,7 @@ import (
 )
 
 func TestHooks(t *testing.T) {
+	t.Parallel()
 	t.Run("pre-commit vetoes and sees isolated index", func(t *testing.T) {
 		t.Run("veto", func(t *testing.T) {
 			repo := newRepository(t)

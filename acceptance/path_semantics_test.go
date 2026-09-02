@@ -10,6 +10,7 @@ import (
 )
 
 func TestCompleteFileSymlinks(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("creating symlinks requires privileges on Windows")
 	}
@@ -57,6 +58,7 @@ func TestCompleteFileSymlinks(t *testing.T) {
 }
 
 func TestCompleteFileSymlinkedParent(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("creating symlinks requires privileges on Windows")
 	}
@@ -130,6 +132,7 @@ func TestCompleteFileSymlinkedParent(t *testing.T) {
 }
 
 func TestCoreIgnoreCase(t *testing.T) {
+	t.Parallel()
 	for _, absolute := range []bool{false, true} {
 		name := "relative"
 		if absolute {
@@ -203,6 +206,7 @@ func swappedCase(value string) string {
 }
 
 func TestLiteralPathspecMagic(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("pathspec magic characters are not valid in Windows filenames")
 	}
@@ -317,6 +321,7 @@ func TestLiteralPathspecMagic(t *testing.T) {
 }
 
 func TestReservedLookingCompletePaths(t *testing.T) {
+	t.Parallel()
 	t.Run("completion is an ordinary path", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.write("completion", []byte("base\n"))

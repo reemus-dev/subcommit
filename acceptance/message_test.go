@@ -8,6 +8,7 @@ import (
 )
 
 func TestCommitMessageSources(t *testing.T) {
+	t.Parallel()
 	t.Run("reads multiline message from stdin", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.seedBasic()

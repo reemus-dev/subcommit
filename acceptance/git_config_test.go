@@ -10,6 +10,7 @@ import (
 )
 
 func TestCoreFileMode(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("Windows worktrees do not expose Unix executable mode")
 	}
@@ -129,6 +130,7 @@ func TestCoreFileMode(t *testing.T) {
 }
 
 func TestGPGSigningConfigurationIsHonored(t *testing.T) {
+	t.Parallel()
 	t.Run("absent is unsigned", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.seedBasic()

@@ -10,6 +10,7 @@ import (
 )
 
 func TestCompleteFileSelectionAndPreservation(t *testing.T) {
+	t.Parallel()
 	t.Run("preserves unrelated staged and unstaged state", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.seedBasic()
@@ -103,6 +104,7 @@ func TestCompleteFileSelectionAndPreservation(t *testing.T) {
 }
 
 func TestCompleteFileSkipWorktreeSelection(t *testing.T) {
+	t.Parallel()
 	t.Run("absent skipped target remains unchanged", func(t *testing.T) {
 		repo := newRepository(t)
 		repo.seedBasic()

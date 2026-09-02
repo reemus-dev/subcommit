@@ -10,6 +10,7 @@ import (
 )
 
 func TestRefusalsPreserveRepositoryState(t *testing.T) {
+	t.Parallel()
 	t.Run("active repository operations", func(t *testing.T) {
 		cases := []struct {
 			name      string

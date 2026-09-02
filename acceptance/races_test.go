@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+// These tests coordinate live Git processes and lock transitions. Keep them
+// serial so unrelated acceptance work cannot consume their timing headroom.
 func TestGuardedHEADRejectsExternalMove(t *testing.T) {
 	repo := newRepository(t)
 	repo.seedBasic()
