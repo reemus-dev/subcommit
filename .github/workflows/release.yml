@@ -6,22 +6,30 @@ on:
       - "v*"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   release:
+    needs: verify
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.1.0
         with:
           fetch-depth: 0
-      - uses: jdx/mise-action@v4
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v4.3.0
         with:
+          version: 2026.8.16
           cache: true
-      - name: Run full checks
-        run: mise run check
-      - name: Validate release configuration
-        run: mise run release:check
+
       - name: Publish GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

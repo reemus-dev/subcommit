@@ -17,7 +17,7 @@ going full git wizard.
 ## Contents
 
 - [Why does this exist?](#why-does-this-exist)
-- [Is it safe to use?](#is-it-safe-to-use)
+- [Is it safe?](#is-it-safe)
 - [When to use](#when-to-use)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -57,7 +57,7 @@ The solution is a CLI tool that replicates what most IDE commit tool windows do:
 - Select changed regions within a file
 - Commit those selections with a message
 
-## Is it safe to use?
+## Is it safe?
 
 This CLI is nearly 100% vibed, so make of that what you will. But at least for
 me, I'm confident in it because of:
@@ -70,23 +70,34 @@ Hopefully that gives you confidence too. For more info, see the
 
 ## When to use
 
-| Your situation                                                | Best choice                          |
-| ------------------------------------------------------------- | ------------------------------------ |
-| Commit complete changes to tracked files                      | `git commit -m "message" -- <paths>` |
-| Choose hunks interactively                                    | `git add -p`, an IDE, or a Git TUI   |
-| Commit explicit files or line ranges noninteractively         | `subcommit`                          |
-| Preserve unrelated index and worktree state during automation | `subcommit`                          |
-| Commit an untracked file without staging it first             | `subcommit`                          |
-| Prevent hooks from silently expanding commit scope            | `subcommit`                          |
-
-Native Git already handles the common tracked-file case well. Use `subcommit`
-when selection must be explicit, automatable, and isolated from unrelated
-repository state.
-
-Unlike stash or reset workflows, `subcommit` does not temporarily remove work
-from disk. Unlike `git add -p`, range selection requires no interactive
-terminal. It works in an ordinary Git repository without introducing a new
-branch or workspace model.
+```text
+Commit all current changes?
+  ├─ ✓ yes ─► git commit
+  └─ ✗ no
+      │
+      ▼
+Only complete changes to tracked files?
+  ├─ ✓ yes, ordinary workflow ─► git commit -m "..." -- <paths>
+  └─ ✗ no, or stronger isolation needed
+      │
+      ▼
+Choose hunks interactively?
+  ├─ ✓ yes ─► git add -p, an IDE, or a Git TUI
+  └─ ✗ no
+      │
+      ▼
+Can you name the exact files or current line ranges?
+  ├─ ✗ no ──► use another Git workflow
+  └─ ✓ yes
+      │
+      ▼
+  ◆ subcommit
+      ├─ commits only the requested selection
+      ├─ accepts untracked files without prior staging
+      ├─ preserves unrelated staged, unstaged, and untracked work
+      ├─ guards against concurrent commit and staging conflicts
+      └─ prevents hooks from widening the selection
+```
 
 ## Installation
 
