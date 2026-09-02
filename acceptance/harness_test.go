@@ -209,7 +209,21 @@ func (r *repository) installHook(name string) {
 	if err != nil {
 		r.t.Fatal(err)
 	}
+
 	path := filepath.Join(r.dir, ".git", "hooks", name)
+	if runtime.GOOS == "windows" {
+		// Git discovers hooks by their extensionless names, while Windows needs
+		// the compiled helper's .exe suffix. A shell launcher bridges that boundary.
+		helperPath := path + ".exe"
+		if err := os.WriteFile(helperPath, content, 0o755); err != nil {
+			r.t.Fatal(err)
+		}
+		launcher := fmt.Sprintf(
+			"#!/bin/sh\nexec \"$(dirname \"$0\")/%s.exe\" \"$@\"\n", name,
+		)
+		content = []byte(launcher)
+	}
+
 	if err := os.WriteFile(path, content, 0o755); err != nil {
 		r.t.Fatal(err)
 	}
