@@ -101,8 +101,9 @@ Can you name the exact files or current line ranges?
 
 ## Installation
 
-> [!NOTE] `subcommit` requires Git 2.36 or later. It has no other runtime
-> dependencies.
+<!-- prettier-ignore -->
+> [!NOTE]
+> `subcommit` requires Git 2.36 or later. It has no other runtime dependencies.
 
 ### Mise
 
@@ -321,9 +322,9 @@ discarding them.
 
 ### Line selection
 
-> [!IMPORTANT] A line number identifies a change, not an exact commit boundary.
-> If that line belongs to a larger contiguous edit, the entire edit is
-> committed. Review the effective patch before confirmation.
+<!-- prettier-ignore -->
+> [!IMPORTANT]
+> A line number identifies a change, not an exact commit boundary. If that line belongs to a larger contiguous edit, the entire edit is committed. Review the effective patch before confirmation.
 
 Repeated ranges for one file are combined. Selecting both the entire file and
 specific lines from it is refused rather than silently broadening the commit.
@@ -363,8 +364,9 @@ subcommit -m "move and edit" a.txt b.txt
 
 `subcommit` itself does not rewrite files.
 
-> [!WARNING] Hooks run before confirmation and may modify selected files. File
-> changes are reported, but canceling does not undo them.
+<!-- prettier-ignore -->
+> [!WARNING]
+> Hooks run before confirmation and may modify selected files. File changes are reported, but canceling does not undo them.
 
 | Hook                 | Behavior                                                               |
 | -------------------- | ---------------------------------------------------------------------- |
