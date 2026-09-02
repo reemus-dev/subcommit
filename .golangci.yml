@@ -1,0 +1,17 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - govet
+    - ineffassign
+    - staticcheck
+  settings:
+    staticcheck:
+      # CLI errors intentionally start with a capitalized Git product name.
+      checks: ["-ST1005"]
+
+formatters:
+  enable:
+    - goimports
+    - gofumpt

@@ -1,0 +1,79 @@
+version: 2
+
+before:
+  hooks:
+    - go run ./internal/completions
+
+builds:
+  - id: subcommit
+    main: .
+    binary: subcommit
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/reemus-dev/subcommit/internal/cli.Version={{ .Tag }}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+  - id: git-subcommit
+    main: .
+    binary: git-subcommit
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/reemus-dev/subcommit/internal/cli.Version={{ .Tag }}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - ids:
+      - subcommit
+      - git-subcommit
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ title .Os }}_ {{- if eq .Arch "amd64"
+      }}x86_64{{ else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE
+      - README.md
+      - src: bin/completions/subcommit.bash
+        dst: completions
+        strip_parent: true
+      - src: bin/completions/_subcommit
+        dst: completions
+        strip_parent: true
+      - src: bin/completions/subcommit.fish
+        dst: completions
+        strip_parent: true
+      - src: bin/completions/subcommit.ps1
+        dst: completions
+        strip_parent: true
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: reemus-dev
+    name: subcommit
+
+changelog:
+  disable: true

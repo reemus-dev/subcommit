@@ -1,0 +1,8 @@
+bin/
+dist/
+coverage/
+skills/commit/scripts/
+
+# Go and shell source use language-specific formatters.
+*.go
+*.sh

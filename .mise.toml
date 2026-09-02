@@ -1,0 +1,80 @@
+_.file = [".env"]
+_.path = []
+
+[tools]
+go = "1.27.0"
+node = "26.8.1"
+"npm:prettier" = "3.9.6"
+"go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "2.13.2"
+"go:golang.org/x/tools/cmd/goimports" = "0.49.0"
+"go:mvdan.cc/gofumpt" = "0.11.0"
+goreleaser = "2.18.0"
+
+[tasks.build]
+description = "Build native subcommit and git-subcommit binaries with development version metadata"
+run = [
+  "mkdir -p bin",
+  "rm -f bin/subcommit bin/git-subcommit",
+  "go build -ldflags='-X github.com/reemus-dev/subcommit/internal/cli.Version=dev' -o bin/subcommit .",
+  "go build -ldflags='-X github.com/reemus-dev/subcommit/internal/cli.Version=dev' -o bin/git-subcommit .",
+]
+run_windows = [
+  "if not exist bin mkdir bin",
+  "if exist bin\\subcommit.exe del /F /Q bin\\subcommit.exe",
+  "if exist bin\\git-subcommit.exe del /F /Q bin\\git-subcommit.exe",
+  "go build -ldflags=\"-X github.com/reemus-dev/subcommit/internal/cli.Version=dev\" -o bin/subcommit.exe .",
+  "go build -ldflags=\"-X github.com/reemus-dev/subcommit/internal/cli.Version=dev\" -o bin/git-subcommit.exe .",
+]
+
+[tasks.test]
+description = "Run Go unit and acceptance tests with lock-protocol coverage"
+depends = ["build"]
+env = { SUBCOMMIT_TEST_LOCK_PROTOCOL = "1" }
+run = "go test ./..."
+
+[tasks.lint]
+description = "Run pinned correctness linters and formatting verification"
+run = "golangci-lint run"
+
+[tasks.format]
+description = "Format Go imports, Go code, and repository text files"
+run = [
+  "goimports -w .",
+  "gofumpt -w .",
+  "prettier --write ."
+]
+
+[tasks."format:check"]
+description = "Check Go imports, Go code, and repository text formatting without modifying files"
+run = ["golangci-lint fmt --diff", "prettier --check ."]
+
+[tasks.check]
+description = "Run tests, lint, and non-mutating formatting checks"
+depends = ["test", "lint", "format:check"]
+
+[tasks."release:check"]
+description = "Validate the GoReleaser configuration"
+run = "goreleaser check"
+
+[tasks."release:snapshot"]
+description = "Build all release archives without publishing"
+run = "goreleaser release --snapshot --clean"
+
+[tasks.demo]
+description = "Regenerate the README terminal demo"
+run = '''
+set -eu
+trap 'rm -rf assets/demo/bin' EXIT
+mkdir -p assets/demo/bin
+CGO_ENABLED=0 GOOS=linux GOARCH="$(go env GOARCH)" go build \
+  -ldflags='-X github.com/reemus-dev/subcommit/internal/cli.Version=dev' \
+  -o assets/demo/bin/subcommit .
+docker build --quiet --tag subcommit-demo-vhs --file assets/demo/Dockerfile assets/demo
+docker run --rm \
+  --env HOST_UID="$(id -u)" \
+  --env HOST_GID="$(id -g)" \
+  --volume "$PWD/assets/demo:/vhs/assets/demo" \
+  --entrypoint sh \
+  subcommit-demo-vhs -c \
+  'vhs assets/demo/subcommit.tape && chown "$HOST_UID:$HOST_GID" assets/demo/subcommit.gif assets/demo/subcommit.mp4'
+'''

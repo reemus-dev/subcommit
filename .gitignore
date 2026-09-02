@@ -1,0 +1,37 @@
+# build and release output
+bin/
+dist/
+coverage/
+*.lcov
+
+# logs
+*.log
+logs/
+
+# environment
+.env
+.env*.local
+*.local
+
+# editors
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# mise local overrides
+.mise.local.toml
+.mise.*.local.toml
+
+# auth / secrets
+.auth.json
+
+# AI agent local state
+.agents/
+.claude/
+.codex/
+.pi/
+.air/
+.mcp.json
+CLAUDE.local.md

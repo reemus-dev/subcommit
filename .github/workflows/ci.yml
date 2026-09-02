@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Native ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            runner: ubuntu-24.04
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+          - target: darwin-amd64
+            runner: macos-15-intel
+          - target: darwin-arm64
+            runner: macos-15
+          - target: windows-amd64
+            runner: windows-2025
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+        with:
+          cache: true
+      - name: Run canonical checks
+        run: mise run check
+      - name: Add built commands to PATH
+        shell: bash
+        run: echo "$PWD/bin" >> "$GITHUB_PATH"
+      - name: Smoke-test commands and completion
+        shell: bash
+        run: |
+          subcommit --version
+          git-subcommit --version
+          git-subcommit --help
+          git subcommit -h
+          for shell in bash zsh fish powershell; do
+            test -n "$(subcommit --completion "$shell")"
+          done
+
+  release-matrix:
+    name: Cross-build release matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v4
+        with:
+          cache: true
+      - run: mise run release:check
+      - run: mise run release:snapshot
+      - name: Verify all cross-built archives
+        shell: bash
+        run: |
+          for target in \
+            Darwin_x86_64.tar.gz Darwin_arm64.tar.gz \
+            Linux_x86_64.tar.gz Linux_arm64.tar.gz \
+            Windows_x86_64.zip Windows_arm64.zip; do
+            compgen -G "dist/subcommit_*_${target}" >/dev/null
+          done
+      - name: Smoke-test host archive
+        shell: bash
+        run: |
+          archive=$(compgen -G 'dist/subcommit_*_Linux_x86_64.tar.gz')
+          mkdir smoke
+          tar -xzf "$archive" -C smoke
+          smoke/subcommit --version
+          smoke/git-subcommit --version
+          smoke/git-subcommit --help
+          PATH="$PWD/smoke:$PATH" git subcommit -h
+          test -f smoke/completions/subcommit.bash
+          test -f smoke/completions/_subcommit
+          test -f smoke/completions/subcommit.fish
+          test -f smoke/completions/subcommit.ps1
