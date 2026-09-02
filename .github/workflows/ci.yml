@@ -61,49 +61,6 @@ jobs:
             test -n "$(subcommit --completion "$shell")"
           done
 
-      - name: Smoke-test Windows installer
-        if: matrix.target == 'windows-amd64'
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $originalUserPath = [System.Environment]::GetEnvironmentVariable(
-              "Path",
-              [System.EnvironmentVariableTarget]::User
-          )
-          $installDir = Join-Path $PWD "installer-smoke"
-          try {
-              mise run release:snapshot
-              $env:SUBCOMMIT_INSTALL_FIXTURES = (Resolve-Path dist).Path
-              function Invoke-WebRequest {
-                  param(
-                      [switch]$UseBasicParsing,
-                      [string]$Uri,
-                      [string]$OutFile
-                  )
-                  $file = [System.IO.Path]::GetFileName($Uri)
-                  Copy-Item -LiteralPath (Join-Path $env:SUBCOMMIT_INSTALL_FIXTURES $file) `
-                      -Destination $OutFile
-              }
-
-              New-Item -ItemType Directory -Path $installDir | Out-Null
-              & ./assets/install.ps1 -InstallDir $installDir
-              & "$installDir/subcommit.exe" --version
-              if ($LASTEXITCODE -ne 0) {
-                  throw "installed subcommit.exe failed"
-              }
-              & "$installDir/git-subcommit.exe" --version
-              if ($LASTEXITCODE -ne 0) {
-                  throw "installed git-subcommit.exe failed"
-              }
-          } finally {
-              [System.Environment]::SetEnvironmentVariable(
-                  "Path",
-                  $originalUserPath,
-                  [System.EnvironmentVariableTarget]::User
-              )
-              Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $installDir
-          }
-
   release-matrix:
     name: Cross-build release matrix
     runs-on: ubuntu-24.04
@@ -179,3 +136,69 @@ jobs:
             bash assets/install.sh -d "$PWD/installer-smoke/bin"
           installer-smoke/bin/subcommit --version
           installer-smoke/bin/git-subcommit --version
+
+      - name: Upload Windows installer fixture
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: windows-installer-fixture
+          path: |
+            dist/checksums.txt
+            dist/subcommit_*_Windows_x86_64.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  windows-installer:
+    name: Windows installer
+    needs: release-matrix
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: windows-installer-fixture
+          path: dist
+
+      - name: Smoke-test Windows installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $originalUserPath = [System.Environment]::GetEnvironmentVariable(
+              "Path",
+              [System.EnvironmentVariableTarget]::User
+          )
+          $installDir = Join-Path $PWD "installer-smoke"
+          try {
+              $env:SUBCOMMIT_INSTALL_FIXTURES = (Resolve-Path dist).Path
+              function Invoke-WebRequest {
+                  param(
+                      [switch]$UseBasicParsing,
+                      [string]$Uri,
+                      [string]$OutFile
+                  )
+                  $file = [System.IO.Path]::GetFileName($Uri)
+                  Copy-Item -LiteralPath (Join-Path $env:SUBCOMMIT_INSTALL_FIXTURES $file) `
+                      -Destination $OutFile
+              }
+
+              New-Item -ItemType Directory -Path $installDir | Out-Null
+              & ./assets/install.ps1 -InstallDir $installDir
+              & "$installDir/subcommit.exe" --version
+              if ($LASTEXITCODE -ne 0) {
+                  throw "installed subcommit.exe failed"
+              }
+              & "$installDir/git-subcommit.exe" --version
+              if ($LASTEXITCODE -ne 0) {
+                  throw "installed git-subcommit.exe failed"
+              }
+          } finally {
+              [System.Environment]::SetEnvironmentVariable(
+                  "Path",
+                  $originalUserPath,
+                  [System.EnvironmentVariableTarget]::User
+              )
+              Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $installDir
+          }
