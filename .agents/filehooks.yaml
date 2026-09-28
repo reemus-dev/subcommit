@@ -1,0 +1,26 @@
+continuation:
+  turn_end:
+    failed: true
+    changed: false
+    clean: false
+  agent_before_settle:
+    failed: true
+    changed: false
+    clean: false
+
+hooks:
+  - name: Go format
+    events: ["turn_end"]
+    include: ["**/*.go"]
+    cmd: goimports -w {{files}} && gofumpt -w {{files}}
+
+  - name: Prettier
+    events: ["turn_end"]
+    include: ["**/*.md", "**/*.json", "**/*.yaml", "**/*.yml", "**/*.mjs"]
+    cmd: prettier --write {{files}}
+
+  - name: Check
+    events: ["agent_before_settle"]
+    skip_if_env: [AGENCY_SUBAGENT_ID]
+    include: ["**/*.go"]
+    cmd: mise run check
