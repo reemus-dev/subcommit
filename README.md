@@ -332,16 +332,17 @@ Line selection supports modified regular files only.
 
 ### Moves and renames
 
-If one file disappears and an identical new file appears, `subcommit` treats
-them as a move. Selecting either path automatically includes both. Example:
+If one file disappears and exactly one identical new file appears, `subcommit`
+treats them as a move. Selecting either path automatically includes both.
+Ignored files never count as a move. Example:
 
 ```sh
 git mv a.txt b.txt
 subcommit -m "rename a to b" b.txt
 ```
 
-If the moved file was also edited, or more than one identical match exists, name
-both paths explicitly:
+Otherwise `subcommit` commits only the named path. To commit a move whose file
+was also edited, or one of several identical copies, name both paths:
 
 ```sh
 subcommit -m "move and edit" a.txt b.txt

@@ -51,7 +51,6 @@ func (op *operation) expandExactMoves(ctx context.Context) error {
 
 	selectedKeys := make(map[moveKey]bool)
 	selectedShapes := make(map[moveShape]bool)
-	needsUntrackedCandidates := false
 	for _, target := range op.request.Targets {
 		if len(target.Ranges) != 0 {
 			continue
@@ -86,7 +85,6 @@ func (op *operation) expandExactMoves(ctx context.Context) error {
 				}
 				selectedKeys[key] = true
 				selectedShapes[moveShape{kind: key.kind, size: size}] = true
-				needsUntrackedCandidates = true
 			}
 		}
 	}
@@ -105,16 +103,6 @@ func (op *operation) expandExactMoves(ctx context.Context) error {
 		}
 		if entry.OriginalPath != "" {
 			candidates[entry.OriginalPath] = true
-		}
-	}
-	if needsUntrackedCandidates {
-		untracked, err := op.untrackedPaths(ctx)
-		if err != nil {
-			return err
-		}
-		for _, path := range untracked {
-			candidates[path] = true
-			untrackedCandidates[path] = true
 		}
 	}
 
@@ -183,7 +171,7 @@ func (op *operation) expandExactMoves(ctx context.Context) error {
 		}
 		if endpoint, ok := findMoveEndpoint(additions, target.Path); ok {
 			counterpart, err := exactMoveCounterpart(
-				target.Path, endpoint.key,
+				endpoint.key,
 				deletionsByKey, additionsByKey, complete, ranged,
 			)
 			if err != nil {
@@ -200,7 +188,7 @@ func (op *operation) expandExactMoves(ctx context.Context) error {
 		}
 		if endpoint, ok := findMoveEndpoint(deletions, target.Path); ok {
 			counterpart, err := exactMoveCounterpart(
-				target.Path, endpoint.key,
+				endpoint.key,
 				additionsByKey, deletionsByKey, complete, ranged,
 			)
 			if err != nil {
@@ -329,7 +317,7 @@ func findMoveEndpoint(endpoints []moveEndpoint, path string) (moveEndpoint, bool
 }
 
 func exactMoveCounterpart(
-	selected string, key moveKey,
+	key moveKey,
 	counterparts, sameSide map[moveKey][]string,
 	explicitComplete, ranged map[string]bool,
 ) (string, error) {
@@ -350,30 +338,8 @@ func exactMoveCounterpart(
 			}
 		}
 	}
-	if len(matches) == 0 {
-		return "", nil
-	}
 	if len(matches) == 1 && len(sameSide[key]) == 1 {
 		return matches[0], nil
 	}
-
-	ambiguous := append(append([]string(nil), matches...), sameSide[key]...)
-	sort.Strings(ambiguous)
-	lines := make([]string, 0, len(ambiguous))
-	for index, path := range ambiguous {
-		if index == 0 || path != ambiguous[index-1] {
-			lines = append(lines, safePreviewPath(path))
-		}
-	}
-	return "", &console.Diagnostic{
-		Summary: fmt.Sprintf(
-			"cannot determine the exact move counterpart for: %s",
-			safePreviewPath(selected),
-		),
-		Hint: "select the intended source and destination paths explicitly",
-		Sections: []console.Section{{
-			Title: "Matching paths",
-			Lines: lines,
-		}},
-	}
+	return "", nil
 }

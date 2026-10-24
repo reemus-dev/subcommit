@@ -21,25 +21,6 @@ func (op *operation) statusEntries(ctx context.Context) ([]statusEntry, error) {
 	return parseStatus(output), nil
 }
 
-func (op *operation) untrackedPaths(ctx context.Context) ([]string, error) {
-	var paths []string
-	for _, args := range [][]string{
-		{"ls-files", "--others", "--exclude-standard", "-z"},
-		{"ls-files", "--others", "--ignored", "--exclude-standard", "-z"},
-	} {
-		output, err := op.repoGit.Output(ctx, args...)
-		if err != nil {
-			return nil, err
-		}
-		for _, path := range bytes.Split(output, []byte{0}) {
-			if len(path) > 0 {
-				paths = append(paths, string(path))
-			}
-		}
-	}
-	return paths, nil
-}
-
 func parseStatus(output []byte) []statusEntry {
 	records := bytes.Split(output, []byte{0})
 	entries := make([]statusEntry, 0, len(records))
